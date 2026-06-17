@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use sqlx::PgPool;
-use tokio::time::{interval, Duration};
+use tokio::time::{Duration, interval};
 
 use crate::engine::DoryEngine;
 
@@ -37,7 +37,10 @@ async fn run_decay_pruning(pool: &PgPool) -> Result<(), sqlx::Error> {
     .execute(pool)
     .await?;
 
-    tracing::info!("Decay/pruning complete: evicted {} records", deleted.rows_affected());
+    tracing::info!(
+        "Decay/pruning complete: evicted {} records",
+        deleted.rows_affected()
+    );
     Ok(())
 }
 

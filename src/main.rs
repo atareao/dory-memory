@@ -74,8 +74,7 @@ async fn main() -> anyhow::Result<()> {
         embedding_model: config.embedding.model,
     };
 
-    let app = routes::create_router(app_state)
-        .layer(CorsLayer::permissive());
+    let app = routes::create_router(app_state).layer(CorsLayer::permissive());
 
     let addr = format!("{}:{}", config.server.host, config.server.port);
     tracing::info!("Starting server on {addr}");
@@ -84,9 +83,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .with_context(|| format!("Failed to bind to {addr}"))?;
 
-    axum::serve(listener, app)
-        .await
-        .context("Server failed")?;
+    axum::serve(listener, app).await.context("Server failed")?;
 
     Ok(())
 }

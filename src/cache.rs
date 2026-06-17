@@ -59,7 +59,10 @@ impl DoryCacheManager {
         Ok(())
     }
 
-    pub async fn flush_sandbox_to_db(&self, engine: &crate::engine::DoryEngine) -> Result<(), sqlx::Error> {
+    pub async fn flush_sandbox_to_db(
+        &self,
+        engine: &crate::engine::DoryEngine,
+    ) -> Result<(), sqlx::Error> {
         let mut sandbox = self.session_sandbox.lock().await;
         while let Some(payload) = sandbox.pop_front() {
             engine.commit_memory(payload).await?;

@@ -1,10 +1,10 @@
 use std::sync::Arc;
 
 use axum::{
+    Json, Router,
     extract::{Path, State},
     http::StatusCode,
     routing::{delete, get, post},
-    Json, Router,
 };
 use serde::Deserialize;
 use uuid::Uuid;
@@ -150,7 +150,11 @@ async fn hybrid_search(
         .map_err(DoryError::Database)?
         .unwrap_or(state.default_dimensions as i32) as usize;
 
-    let query_text_final = if query_text.is_empty() { query } else { query_text };
+    let query_text_final = if query_text.is_empty() {
+        query
+    } else {
+        query_text
+    };
     let embedding = if query_text_final.is_empty() {
         vec![0.0; dimensions]
     } else {
@@ -162,7 +166,13 @@ async fn hybrid_search(
 
     let results: Vec<DoryMemoryResponse> = state
         .engine
-        .hybrid_recall(&req.namespace, &query_text_final, embedding, req.tags, req.limit)
+        .hybrid_recall(
+            &req.namespace,
+            &query_text_final,
+            embedding,
+            req.tags,
+            req.limit,
+        )
         .await
         .map_err(DoryError::Database)?
         .into_iter()
@@ -328,7 +338,12 @@ async fn list_stale(
 ) -> DoryResult<Json<Vec<DoryMemoryResponse>>> {
     let results: Vec<DoryMemoryResponse> = state
         .engine
-        .list_stale(req.namespace.as_deref(), req.older_than_hours, req.importance_below, req.limit)
+        .list_stale(
+            req.namespace.as_deref(),
+            req.older_than_hours,
+            req.importance_below,
+            req.limit,
+        )
         .await
         .map_err(DoryError::Database)?
         .into_iter()
@@ -371,9 +386,7 @@ async fn batch_delete(
     Ok(Json(BatchDeleteResponse { deleted }))
 }
 
-async fn get_stats(
-    State(state): State<AppState>,
-) -> DoryResult<Json<serde_json::Value>> {
+async fn get_stats(State(state): State<AppState>) -> DoryResult<Json<serde_json::Value>> {
     let stats = state
         .engine
         .get_stats()

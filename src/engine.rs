@@ -223,9 +223,11 @@ impl DoryEngine {
         max_token_budget: usize,
     ) -> Result<Vec<DoryMemoryNode>, sqlx::Error> {
         let candidates = if time_window.is_some() || (query_text.is_empty() && !tags.is_empty()) {
-            self.temporal_recall(namespace, time_window, tags, 20).await?
+            self.temporal_recall(namespace, time_window, tags, 20)
+                .await?
         } else {
-            self.hybrid_recall(namespace, query_text, query_vector, tags, 20).await?
+            self.hybrid_recall(namespace, query_text, query_vector, tags, 20)
+                .await?
         };
 
         let mut selected_nodes = Vec::new();
@@ -265,12 +267,11 @@ impl DoryEngine {
     }
 
     pub async fn get_namespace_dimensions(&self, name: &str) -> Result<Option<i32>, sqlx::Error> {
-        let row = sqlx::query_scalar::<_, i32>(
-            "SELECT dimensions FROM dory_namespaces WHERE name = $1",
-        )
-        .bind(name)
-        .fetch_optional(&self.pool)
-        .await?;
+        let row =
+            sqlx::query_scalar::<_, i32>("SELECT dimensions FROM dory_namespaces WHERE name = $1")
+                .bind(name)
+                .fetch_optional(&self.pool)
+                .await?;
         Ok(row)
     }
 
@@ -437,36 +438,55 @@ impl DoryEngine {
 
     pub async fn get_stats(&self) -> Result<DoryStats, sqlx::Error> {
         let total: (Option<i64>,) = sqlx::query_as("SELECT COUNT(*) FROM dory_memories")
-            .fetch_one(&self.pool).await?;
+            .fetch_one(&self.pool)
+            .await?;
 
-        let immortal: (Option<i64>,) = sqlx::query_as("SELECT COUNT(*) FROM dory_memories WHERE is_immortal = TRUE")
-            .fetch_one(&self.pool).await?;
+        let immortal: (Option<i64>,) =
+            sqlx::query_as("SELECT COUNT(*) FROM dory_memories WHERE is_immortal = TRUE")
+                .fetch_one(&self.pool)
+                .await?;
 
         let ns_count: (Option<i64>,) = sqlx::query_as("SELECT COUNT(*) FROM dory_namespaces")
-            .fetch_one(&self.pool).await?;
+            .fetch_one(&self.pool)
+            .await?;
 
         let ns_rows: Vec<(String, Option<i64>)> = sqlx::query_as(
             "SELECT n.name, COUNT(m.id)::bigint FROM dory_namespaces n LEFT JOIN dory_memories m ON m.namespace = n.name GROUP BY n.name ORDER BY count DESC",
         )
         .fetch_all(&self.pool).await?;
 
-        let avg_imp: (Option<f64>,) = sqlx::query_as("SELECT AVG(importance::numeric)::float8 FROM dory_memories")
-            .fetch_one(&self.pool).await?;
+        let avg_imp: (Option<f64>,) =
+            sqlx::query_as("SELECT AVG(importance::numeric)::float8 FROM dory_memories")
+                .fetch_one(&self.pool)
+                .await?;
 
-        let low_imp: (Option<i64>,) = sqlx::query_as("SELECT COUNT(*) FROM dory_memories WHERE importance < 0.15 AND is_immortal = FALSE")
-            .fetch_one(&self.pool).await?;
+        let low_imp: (Option<i64>,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM dory_memories WHERE importance < 0.15 AND is_immortal = FALSE",
+        )
+        .fetch_one(&self.pool)
+        .await?;
 
-        let oldest: (Option<DateTime<Utc>>,) = sqlx::query_as("SELECT MIN(created_at) FROM dory_memories")
-            .fetch_one(&self.pool).await?;
+        let oldest: (Option<DateTime<Utc>>,) =
+            sqlx::query_as("SELECT MIN(created_at) FROM dory_memories")
+                .fetch_one(&self.pool)
+                .await?;
 
-        let newest: (Option<DateTime<Utc>>,) = sqlx::query_as("SELECT MAX(created_at) FROM dory_memories")
-            .fetch_one(&self.pool).await?;
+        let newest: (Option<DateTime<Utc>>,) =
+            sqlx::query_as("SELECT MAX(created_at) FROM dory_memories")
+                .fetch_one(&self.pool)
+                .await?;
 
         Ok(DoryStats {
             total_memories: total.0.unwrap_or(0),
             immortal_count: immortal.0.unwrap_or(0),
             namespace_count: ns_count.0.unwrap_or(0),
-            namespaces: ns_rows.into_iter().map(|(name, count)| NamespaceStat { name, count: count.unwrap_or(0) }).collect(),
+            namespaces: ns_rows
+                .into_iter()
+                .map(|(name, count)| NamespaceStat {
+                    name,
+                    count: count.unwrap_or(0),
+                })
+                .collect(),
             avg_importance: avg_imp.0.unwrap_or(0.0),
             low_importance_count: low_imp.0.unwrap_or(0),
             oldest_memory: oldest.0,
