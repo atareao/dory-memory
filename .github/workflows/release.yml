@@ -1,0 +1,169 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name to release (e.g. v0.1.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            ext: ""
+            archive: tar.gz
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            ext: ""
+            archive: tar.gz
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            ext: ""
+            archive: tar.gz
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            ext: .exe
+            archive: zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare archive
+        shell: bash
+        run: |
+          BIN="target/${{ matrix.target }}/release/dory-memory${{ matrix.ext }}"
+          ARCHIVE_NAME="dory-memory${{ matrix.ext }}"
+          cp "$BIN" "$ARCHIVE_NAME"
+          PKG="dory-memory-${{ matrix.target }}"
+          if [ "${{ matrix.archive }}" = "tar.gz" ]; then
+            tar czf "$PKG.tar.gz" "$ARCHIVE_NAME"
+            echo "ARTIFACT=$PKG.tar.gz" >> $GITHUB_ENV
+          else
+            7z a "$PKG.zip" "$ARCHIVE_NAME"
+            echo "ARTIFACT=$PKG.zip" >> $GITHUB_ENV
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dory-memory-${{ matrix.target }}
+          path: ${{ env.ARTIFACT }}
+
+  release:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dory-memory-*
+          merge-multiple: true
+
+      - name: Derive tag name
+        id: tag
+        run: |
+          TAG="${{ inputs.tag || github.ref_name }}"
+          echo "value=${TAG#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate release body
+        run: |
+          cat > notes.md <<'EOF'
+          ## dory-memory
+
+          ### Downloads
+
+          | Architecture | File |
+          |---|---|
+          EOF
+          for f in *.*; do
+            [[ "$f" == *.md ]] && continue
+            [[ "$f" == *.txt ]] && continue
+            [ -f "$f" ] || continue
+            arch=$(echo "$f" | sed 's/^dory-memory-//; s/\.tar\.gz$//; s/\.zip$//')
+            echo "| \`$arch\` | \`$f\` |" >> notes.md
+          done
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          name: dory-memory ${{ steps.tag.outputs.value }}
+          body_path: notes.md
+          files: |
+            *.tar.gz
+            *.zip
+
+  publish:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --allow-dirty
+
+  docker:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
