@@ -1,0 +1,7 @@
+name: dory
+version: 0.1.0
+description: "Rust pgvector backend for Hermes Agent memory. Fast hybrid search, temporal recall, auto-decay."
+hooks:
+  - prefetch
+  - sync_turn
+  - on_session_end

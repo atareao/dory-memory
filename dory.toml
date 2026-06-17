@@ -1,0 +1,13 @@
+[database]
+url = "postgres://dory:dory@localhost:5432/dory"
+max_connections = 10
+
+[server]
+host = "0.0.0.0"
+port = 5005
+
+[embedding]
+api_url = "https://api.openai.com/v1/embeddings"
+api_key = "sk-your-key-here"
+model = "text-embedding-ada-002"
+dimensions = 1536
