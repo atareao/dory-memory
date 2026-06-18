@@ -59,6 +59,7 @@ cargo fmt                # formatting (uses defaults — no rustfmt.toml)
 - **Small `Copy` types** (≤24 bytes) can be passed by value; prefer `&str` over `String`, `&[T]` over `Vec<T>` in params.
 - **Name tests descriptively**: `fn process_should_return_error_when_input_empty()`.
 - **One assertion per test** when practical.
+- **Commit messages** use gitmoji + conventional commits: `✨ feat: ...`, `🐛 fix: ...`, `📝 docs: ...`, `♻️ refactor: ...`, `🔖 release vX.Y.Z`.
 
 ## Module layout
 
