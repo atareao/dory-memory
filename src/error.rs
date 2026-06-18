@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{Json, http::StatusCode, response::IntoResponse};
 use serde_json::json;
 use thiserror::Error;
 
@@ -32,7 +32,10 @@ pub enum DoryError {
 impl IntoResponse for DoryError {
     fn into_response(self) -> axum::response::Response {
         let (status, message) = match &self {
-            DoryError::Database(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error".to_string()),
+            DoryError::Database(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Database error".to_string(),
+            ),
             DoryError::Embedding(msg) => (StatusCode::BAD_GATEWAY, msg.clone()),
             DoryError::SecurityViolation(msg) => (StatusCode::FORBIDDEN, msg.clone()),
             DoryError::Config(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg.clone()),

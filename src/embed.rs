@@ -1,5 +1,5 @@
-use crate::error::{DoryError, DoryResult};
 use crate::cache::DoryCacheManager;
+use crate::error::{DoryError, DoryResult};
 
 pub struct EmbeddingClient {
     client: reqwest::Client,

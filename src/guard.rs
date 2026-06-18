@@ -31,7 +31,8 @@ fn redact_secrets(text: &str) -> String {
         result = result
             .lines()
             .map(|line| {
-                if line.starts_with("-----BEGIN") || line.starts_with("-----END") || line.len() > 80 {
+                if line.starts_with("-----BEGIN") || line.starts_with("-----END") || line.len() > 80
+                {
                     line.to_string()
                 } else {
                     String::new()
@@ -45,8 +46,14 @@ fn redact_secrets(text: &str) -> String {
         (r"password\s*=\s*.+", "password = ***"),
         (r"passwd:\s*\S+", "passwd: ***"),
         (r"api[_-]?key\s*[=:]\s*\S+", "api_key = ***"),
-        (r"Authorization:\s*Bearer\s*\S+", "Authorization: Bearer ***"),
-        (r"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+", "[JWT_REDACTED]"),
+        (
+            r"Authorization:\s*Bearer\s*\S+",
+            "Authorization: Bearer ***",
+        ),
+        (
+            r"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+",
+            "[JWT_REDACTED]",
+        ),
     ];
 
     for (pattern, replacement) in &secret_patterns {
@@ -70,7 +77,8 @@ mod tests {
 
     #[test]
     fn should_redact_ssh_key() {
-        let text = "-----BEGIN OPENSSH PRIVATE KEY-----\nsomething\n-----END OPENSSH PRIVATE KEY-----";
+        let text =
+            "-----BEGIN OPENSSH PRIVATE KEY-----\nsomething\n-----END OPENSSH PRIVATE KEY-----";
         let result = sanitize_text(text).unwrap();
         assert!(!result.contains("something"));
     }
@@ -83,7 +91,8 @@ mod tests {
 
     #[test]
     fn should_detect_jwt() {
-        let text = "token is eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNrvP5IeAzZu6NcGQ";
+        let text =
+            "token is eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNrvP5IeAzZu6NcGQ";
         let result = sanitize_text(text).unwrap();
         assert!(!result.contains("eyJ"));
     }

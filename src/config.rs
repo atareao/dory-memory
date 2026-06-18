@@ -55,8 +55,9 @@ fn default_dimensions() -> usize {
 
 impl DoryConfig {
     pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let content = std::fs::read_to_string(path.as_ref())
-            .map_err(|e| anyhow::anyhow!("Failed to read config at {}: {e}", path.as_ref().display()))?;
+        let content = std::fs::read_to_string(path.as_ref()).map_err(|e| {
+            anyhow::anyhow!("Failed to read config at {}: {e}", path.as_ref().display())
+        })?;
         let mut config: DoryConfig = toml::from_str(&content)?;
 
         if let Ok(key) = std::env::var("DORY_EMBEDDING_API_KEY") {
