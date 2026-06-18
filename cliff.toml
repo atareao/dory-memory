@@ -24,20 +24,24 @@ conventional_commits = true
 filter_unconventional = true
 require_conventional = false
 split_commits = false
-commit_preprocessors = []
+commit_preprocessors = [
+    # Strip leading gitmoji + optional space so conventional parser still works
+    { pattern = '^[✨🐛📝⚡♻️💄✅🔧🔖↩️]\s?', replace = '' },
+]
 protect_breaking_commits = false
 commit_parsers = [
-    { message = "^feat", group = "Features" },
-    { message = "^fix", group = "Bug Fixes" },
-    { message = "^doc", group = "Documentation" },
-    { message = "^perf", group = "Performance" },
-    { message = "^refactor", group = "Refactor" },
-    { message = "^style", group = "Styling" },
-    { message = "^test", group = "Testing" },
+    { message = "^feat", group = "✨ Features" },
+    { message = "^fix", group = "🐛 Bug Fixes" },
+    { message = "^doc", group = "📝 Documentation" },
+    { message = "^perf", group = "⚡ Performance" },
+    { message = "^refactor", group = "♻️ Refactor" },
+    { message = "^style", group = "💄 Styling" },
+    { message = "^test", group = "✅ Testing" },
+    { message = "^🔖", skip = true },
     { message = "^chore\\(release\\)", skip = true },
     { message = "^chore\\(deps\\)", skip = true },
-    { message = "^chore|^ci", group = "Miscellaneous Tasks" },
-    { message = "^revert", group = "Revert" },
+    { message = "^chore|^ci", group = "🔧 Miscellaneous Tasks" },
+    { message = "^revert", group = "↩️ Revert" },
     { message = ".*", group = "Other" },
 ]
 filter_commits = false
