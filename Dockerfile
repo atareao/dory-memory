@@ -7,7 +7,7 @@ COPY src/ src/
 COPY migrations/ migrations/
 
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-RUN cargo build --release --locked
+RUN cargo build --release
 
 FROM gcr.io/distroless/cc-debian12:latest
 
