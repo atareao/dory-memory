@@ -66,7 +66,11 @@ jobs:
           git push origin "v${V}"
 
       - name: Sync development with main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh api -X PUT repos/${{ github.repository }}/git/refs/heads/development -f sha=$(git rev-parse HEAD)
 
       - name: Trigger release workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run release.yml -f tag=v${{ steps.version.outputs.value }}

@@ -1,6 +1,9 @@
 [package]
 name = "dory-memory"
 version = "0.1.1"
+description = "Backend memory store for Hermes Agent — pgvector-powered semantic memory engine with server-side embeddings"
+license = "MIT"
+repository = "https://github.com/atareao/dory-memory"
 edition = "2024"
 
 [dependencies]
