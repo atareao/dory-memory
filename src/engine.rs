@@ -75,8 +75,11 @@ impl DoryEngine {
                 cache_manager.flush_sandbox_to_db(self).await?;
                 cache_manager.stage_ephemeral_memory(payload).await;
             }
-            DoryIntent::Task | DoryIntent::Standard => {
+            DoryIntent::Task => {
                 cache_manager.stage_ephemeral_memory(payload).await;
+            }
+            DoryIntent::Standard => {
+                self.commit_memory(payload).await?;
             }
         }
         Ok(())

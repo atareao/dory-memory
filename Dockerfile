@@ -1,21 +1,34 @@
-# syntax=docker/dockerfile:1
-FROM rust:1.85-slim-bookworm AS builder
+FROM docker.io/library/rust:alpine3.23 AS builder
+
+RUN apk add --no-cache --update \
+            build-base \
+            pkgconfig \
+            musl-dev \
+            openssl \
+            openssl-dev \
+            openssl-libs-static
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY src/ src/
 COPY migrations/ migrations/
 
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-RUN cargo build --release
+RUN cargo build --release --locked && \
+    strip target/release/dory-memory
 
-FROM gcr.io/distroless/cc-debian12:latest
+FROM docker.io/library/alpine:3.23
 
-COPY --from=builder /app/target/release/dory-memory /usr/local/bin/dory-memory
-COPY migrations/ /app/migrations/
+RUN apk add --update --no-cache \
+    ca-certificates \
+    curl \
+    openssl \
+    && \
+    adduser -S -u 1000 -D dory
 
+COPY --from=builder /app/target/release/dory-memory /usr/local/bin/
+COPY --from=builder /app/migrations/ /app/migrations/
+
+USER dory
 EXPOSE 5005
-
-ENV DORY_CONFIG=/etc/dory/dory.toml
 
 ENTRYPOINT ["dory-memory"]
