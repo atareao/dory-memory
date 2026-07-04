@@ -74,4 +74,4 @@ jobs:
       - name: Sync development with main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git origin/main:development --force
+        run: git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git refs/heads/main:refs/heads/development --force
