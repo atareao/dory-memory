@@ -1,9 +1,18 @@
 # Changelog
+## [0.1.7] - 2026-07-04
+
+### Miscellaneous Tasks
+
+- Add manual release workflow dispatch after tag push (#11) (#12)
 ## [0.1.6] - 2026-07-04
 
 ### Bug Fixes
 
 - Force push development to main after release
+
+### Miscellaneous Tasks
+
+- Release v0.1.6
 ## [0.1.5] - 2026-07-04
 
 ### Bug Fixes
