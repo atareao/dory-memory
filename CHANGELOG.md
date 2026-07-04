@@ -1,9 +1,15 @@
 # Changelog
+## [0.1.9] - 2026-07-04
+
+### Bug Fixes
+
+- Sync Cargo.lock after version bump (#14)
 ## [0.1.8] - 2026-07-04
 
 ### Miscellaneous Tasks
 
 - Add actions:write permission for gh workflow run (#13)
+- Release v0.1.8
 ## [0.1.7] - 2026-07-04
 
 ### Miscellaneous Tasks
