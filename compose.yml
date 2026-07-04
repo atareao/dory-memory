@@ -20,10 +20,16 @@ services:
     ports:
       - "5005:5005"
     environment:
-      DORY_CONFIG: /etc/dory/dory.toml
+      DORY_DATABASE_URL: postgres://dory:dory@postgres:5432/dory
+      DORY_DATABASE_MAX_CONNECTIONS: "10"
+      DORY_SERVER_HOST: 0.0.0.0
+      DORY_SERVER_PORT: "5005"
+      DORY_EMBEDDING_API_URL: https://openrouter.ai/api/v1/embeddings
+      DORY_EMBEDDING_API_KEY: ${DORY_EMBEDDING_API_KEY}
+      DORY_EMBEDDING_MODEL: BAAI/bge-m3
+      DORY_EMBEDDING_DIMENSIONS: "1024"
       DORY_WORKSPACE_ROOT: /workspace
     volumes:
-      - ./dory.toml:/etc/dory/dory.toml
       - ./workspace:/workspace
     depends_on:
       postgres:

@@ -15,7 +15,7 @@ cargo run
 - **pgvector** — the primary data store. Docker Compose defines `postgres:16-pgvector`.
 - **OpenAI-compatible embedding API** — Dory generates embeddings server-side by calling a configured `/v1/embeddings` endpoint (OpenAI, LiteLLM, text-embeddings-router).
 - **Docker Compose** — required deploy target. `docker-compose.yml` defines PostgreSQL + pgvector + the app.
-- **Config file** — `dory.toml` loaded at startup. Path set via `DORY_CONFIG` env var or defaults to `./dory.toml`.
+- **Config** — all via environment variables (no config file). See `.env.example` for reference.
 - **Axum HTTP server** — one binary, one process, tokio async runtime.
 - **No CI, no tests yet** — greenfield.
 
@@ -36,7 +36,6 @@ cargo run
 | `reqwest` | HTTP client for embedding API calls |
 | `tower-http` (cors) | Axum middleware |
 | `tracing` + `tracing-subscriber` | Structured logging |
-| `toml` | Config file parsing |
 | `thiserror` | Error type derivation |
 | `anyhow` | Binary-level error handling |
 | `dotenvy` | `.env` loading for dev convenience |
@@ -61,12 +60,19 @@ cargo fmt                # formatting (uses defaults — no rustfmt.toml)
 - **One assertion per test** when practical.
 - **Commit messages** use gitmoji + conventional commits: `✨ feat: ...`, `🐛 fix: ...`, `📝 docs: ...`, `♻️ refactor: ...`, `🔖 release vX.Y.Z`.
 
+## Git Flow
+
+This project follows strict gitflow. See [GIT_FLOW.md](./GIT_FLOW.md) for:
+- Branch structure (main, development, feature/*, hotfix/*)
+- Conventional commits with gitmoji
+- How to create features, hotfixes, and releases
+
 ## Module layout
 
 ```
 src/
 ├── main.rs       # Entrypoint: config load, pool init, migration, axum server, workers
-├── config.rs     # TOML config struct + loader
+├── config.rs     # Env-var config loader
 ├── error.rs      # DoryError enum (thiserror) + axum IntoResponse
 ├── models.rs     # DoryMemoryNode, DoryInsertPayload, DoryIntent, TimeWindow
 ├── guard.rs      # Secret redaction + prompt-injection sanitization
