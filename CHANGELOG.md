@@ -1,9 +1,18 @@
 # Changelog
+## [0.1.11] - 2026-07-04
+
+### Refactor
+
+- Remove GH_PAT, use GITHUB_TOKEN everywhere (#17)
 ## [0.1.10] - 2026-07-04
 
 ### Bug Fixes
 
 - Use fully qualified refs for development sync (#16)
+
+### Miscellaneous Tasks
+
+- Release v0.1.10
 ## [0.1.9] - 2026-07-04
 
 ### Bug Fixes
