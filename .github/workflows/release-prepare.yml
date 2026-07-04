@@ -18,8 +18,6 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-          # GITHUB_TOKEN basta para checkout. Necesitamos GH_PAT para los pushes
-          # (GITHUB_TOKEN no activa otros workflows al hacer push)
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install git-cliff
         uses: taiki-e/install-action@v2
@@ -53,8 +51,6 @@ jobs:
       - name: Generate changelog
         run: git-cliff -o CHANGELOG.md --tag "v${{ steps.version.outputs.value }}"
       - name: Commit, tag and push
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           V="${{ steps.version.outputs.value }}"
           git config user.name "github-actions[bot]"
@@ -62,7 +58,6 @@ jobs:
           git add -A
           git commit -m "chore: release v${V}"
           git tag "v${V}"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           git push origin main
           git push origin "v${V}"
       - name: Trigger release workflow
