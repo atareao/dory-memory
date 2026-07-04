@@ -17,9 +17,9 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
-          # Necesitamos GH_PAT (no GITHUB_TOKEN) para que el tag v* dispare release.yml
-          # GITHUB_TOKEN no activa otros workflows por diseño
-          token: ${{ secrets.GH_PAT }}
+          # GITHUB_TOKEN basta para checkout. Necesitamos GH_PAT para los pushes
+          # (GITHUB_TOKEN no activa otros workflows al hacer push)
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install git-cliff
         uses: taiki-e/install-action@v2
         with:
@@ -50,6 +50,8 @@ jobs:
       - name: Generate changelog
         run: git-cliff -o CHANGELOG.md --tag "v${{ steps.version.outputs.value }}"
       - name: Commit, tag and push
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           V="${{ steps.version.outputs.value }}"
           git config user.name "github-actions[bot]"
