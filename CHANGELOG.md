@@ -1,5 +1,14 @@
 # Changelog
+## [0.1.12] - 2026-07-04
+
+### Documentation
+
+- Update README with env-var config and CI/CD badges (#18)
 ## [0.1.11] - 2026-07-04
+
+### Miscellaneous Tasks
+
+- Release v0.1.11
 
 ### Refactor
 
