@@ -386,7 +386,7 @@ dependencies = [
 
 [[package]]
 name = "dory-memory"
-version = "0.1.1"
+version = "0.1.7"
 dependencies = [
  "anyhow",
  "axum",

@@ -13,7 +13,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src/ src/
 COPY migrations/ migrations/
 
-RUN cargo build --release --locked && \
+RUN cargo build --release && \
     strip target/release/dory-memory
 
 FROM docker.io/library/alpine:3.23
