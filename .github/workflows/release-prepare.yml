@@ -59,9 +59,10 @@ jobs:
           git add -A
           git commit -m "chore: release v${V}"
           git tag "v${V}"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           git push origin main
           git push origin "v${V}"
       - name: Sync development with main
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh api -X PUT repos/${{ github.repository }}/git/refs/heads/development -f sha=$(git rev-parse HEAD)
