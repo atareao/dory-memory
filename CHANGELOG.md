@@ -1,9 +1,15 @@
 # Changelog
+## [0.1.8] - 2026-07-04
+
+### Miscellaneous Tasks
+
+- Add actions:write permission for gh workflow run (#13)
 ## [0.1.7] - 2026-07-04
 
 ### Miscellaneous Tasks
 
 - Add manual release workflow dispatch after tag push (#11) (#12)
+- Release v0.1.7
 ## [0.1.6] - 2026-07-04
 
 ### Bug Fixes
