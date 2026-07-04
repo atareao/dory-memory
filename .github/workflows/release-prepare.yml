@@ -62,6 +62,12 @@ jobs:
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           git push origin main
           git push origin "v${V}"
+      - name: Trigger release workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V="${{ steps.version.outputs.value }}"
+          gh workflow run release.yml --ref "v${V}"
       - name: Sync development with main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
