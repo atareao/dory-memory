@@ -1,9 +1,11 @@
 # Dory Memory
 
-[![Rust](https://img.shields.io/badge/rust-1.85%2B-dea584?logo=rust)](https://www.rust-lang.org)
+[![Crates.io](https://img.shields.io/crates/v/dory-memory?logo=rust)](https://crates.io/crates/dory-memory)
+[![GitHub Release](https://img.shields.io/github/v/release/atareao/dory-memory?logo=github)](https://github.com/atareao/dory-memory/releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/atareao/dory-memory/ci.yml?branch=development&label=CI&logo=github)](https://github.com/atareao/dory-memory/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/actions/workflow/status/atareao/dory-memory/release.yml?label=Release&logo=github)](https://github.com/atareao/dory-memory/actions/workflows/release.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/anomalyco/dory-memory/pulls)
-![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker)](https://github.com/atareao/dory-memory/pkgs/container/dory-memory)
 
 **Backend memory store for [Hermes Agent](https://github.com/anomalyco/hermes-agent).**  
 A semantic memory engine powered by **pgvector** (PostgreSQL vector database) with server-side embeddings via any OpenAI-compatible API.
@@ -21,7 +23,7 @@ Store, search, and maintain agent memories with hybrid vector + full-text retrie
 - **Ephemeral sandbox** — `Pivot` and `Task` intents stage memories in a `VecDeque` before committing on flush
 - **Temporal recall** — Query memories within ISO datetime windows
 - **Token-budget search** — `recall_within_token_budget` fits results into an LLM context limit
-- **Maintenance** — Automatic decay/importance adjustment every 24 h, stale-memory listing, batch purge (immortal-protected)
+- **Maintenance** — Automatic decay/importance adjustment every 24 h, stale-memory listing, batch purge (immortal-protected)
 - **Consolidation** — Merges sandbox to DB when idle
 - **Workspace telemetry** — `notify`-based file watcher drives proactive horizon sweeps
 - **Hermes plugin** — Drop-in `MemoryProvider` plugin with 6 agent tools (`recall`, `sweep`, `search_temporal`, `list_stale`, `purge`, `stats`)
@@ -95,26 +97,19 @@ cargo run
 
 ## Configuration
 
-Create `dory.toml`:
+All configuration is via **environment variables** (no config file). Settings match the `DORY_` prefix in `.env.example`:
 
-```toml
-[database]
-url = "postgres://dory:dory@localhost:5432/dory"
-
-[server]
-host = "0.0.0.0"
-port = 5005
-
-[embedding]
-api_url = "https://api.openai.com/v1/embeddings"
-api_key = "sk-..."              # or DORY_EMBEDDING_API_KEY env var
-model = "text-embedding-ada-002"
-dimensions = 1536
-```
-
-Set `DORY_CONFIG` to your config path (defaults to `./dory.toml`).
-
-> **Security note:** Prefer the `DORY_EMBEDDING_API_KEY` environment variable over writing the key in `dory.toml`. The config loader checks the env var first.
+| Variable | Default | Description |
+|---|---|---|
+| `DORY_DATABASE_URL` | `postgres://dory:dory@localhost:5432/dory` | PostgreSQL connection string |
+| `DORY_DATABASE_MAX_CONNECTIONS` | `10` | Connection pool size |
+| `DORY_SERVER_HOST` | `0.0.0.0` | HTTP bind address |
+| `DORY_SERVER_PORT` | `5005` | HTTP port |
+| `DORY_EMBEDDING_API_URL` | `https://openrouter.ai/api/v1/embeddings` | OpenAI-compatible embeddings endpoint |
+| `DORY_EMBEDDING_API_KEY` | — | API key (required) |
+| `DORY_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding model name |
+| `DORY_EMBEDDING_DIMENSIONS` | `1024` | Vector dimension count |
+| `DORY_WORKSPACE_ROOT` | — | Workspace path for telemetry (optional) |
 
 ---
 
@@ -163,7 +158,7 @@ Requires **Rust ≥1.85** (edition 2024). The project pins `stable` in `rust-too
 ```
 src/
 ├── main.rs       # Entrypoint: config, pool, migrations, axum, workers
-├── config.rs     # TOML config struct + env var overrides
+├── config.rs     # Env-var config loader (DoryConfig::from_env)
 ├── error.rs      # DoryError (thiserror) + axum IntoResponse
 ├── models.rs     # DoryMemoryNode, DoryInsertPayload, DoryIntent, TimeWindow
 ├── guard.rs      # Secret redaction + prompt-injection sanitization
@@ -174,3 +169,13 @@ src/
 ├── workers.rs    # Decay/pruning + consolidation
 └── telemetry.rs  # Workspace file watcher
 ```
+
+### CI/CD
+
+This project follows **Git Flow** with automated releases:
+
+- PRs to `main` or `development` trigger CI (lint, build, test)
+- Merging to `main` bumps version + generates changelog + creates tag
+- Tagged releases build multi-arch binaries, publish to crates.io, and push Docker images to `ghcr.io/atareao/dory-memory`
+
+See [GIT_FLOW.md](./GIT_FLOW.md) for the full workflow.
