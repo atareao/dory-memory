@@ -343,7 +343,7 @@ class DoryMemoryProvider(MemoryProvider):
                         "namespace": self._namespace,
                         "content_l0": f"User: {user_content[:200]}",
                         "content_l1": user_content,
-                        "intent": "Task",
+                        "intent": "Standard",
                         "is_immortal": False,
                         "tags": ["type:conversation", "role:user"],
                     },

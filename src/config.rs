@@ -1,69 +1,62 @@
-use serde::Deserialize;
-use std::path::Path;
-
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct DoryConfig {
     pub database: DatabaseConfig,
     pub server: ServerConfig,
     pub embedding: EmbeddingConfig,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct DatabaseConfig {
     pub url: String,
-    #[serde(default = "default_max_connections")]
     pub max_connections: u32,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct ServerConfig {
-    #[serde(default = "default_host")]
     pub host: String,
-    #[serde(default = "default_port")]
     pub port: u16,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone)]
 pub struct EmbeddingConfig {
     pub api_url: String,
     pub api_key: String,
-    #[serde(default = "default_model")]
     pub model: String,
-    #[serde(default = "default_dimensions")]
     pub dimensions: usize,
 }
 
-fn default_max_connections() -> u32 {
-    10
+fn env_or(name: &str, default: &str) -> String {
+    std::env::var(name).unwrap_or_else(|_| default.to_string())
 }
 
-fn default_host() -> String {
-    "0.0.0.0".to_string()
-}
-
-fn default_port() -> u16 {
-    5005
-}
-
-fn default_model() -> String {
-    "text-embedding-ada-002".to_string()
-}
-
-fn default_dimensions() -> usize {
-    1536
+fn env_required(name: &str) -> anyhow::Result<String> {
+    std::env::var(name)
+        .map_err(|_| anyhow::anyhow!("Required environment variable {name} is not set"))
 }
 
 impl DoryConfig {
-    pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let content = std::fs::read_to_string(path.as_ref()).map_err(|e| {
-            anyhow::anyhow!("Failed to read config at {}: {e}", path.as_ref().display())
-        })?;
-        let mut config: DoryConfig = toml::from_str(&content)?;
-
-        if let Ok(key) = std::env::var("DORY_EMBEDDING_API_KEY") {
-            config.embedding.api_key = key;
-        }
-
-        Ok(config)
+    pub fn from_env() -> anyhow::Result<Self> {
+        Ok(Self {
+            database: DatabaseConfig {
+                url: env_required("DORY_DATABASE_URL")?,
+                max_connections: env_or("DORY_DATABASE_MAX_CONNECTIONS", "10")
+                    .parse()
+                    .unwrap_or(10),
+            },
+            server: ServerConfig {
+                host: env_or("DORY_SERVER_HOST", "0.0.0.0"),
+                port: env_or("DORY_SERVER_PORT", "5005")
+                    .parse()
+                    .unwrap_or(5005),
+            },
+            embedding: EmbeddingConfig {
+                api_url: env_required("DORY_EMBEDDING_API_URL")?,
+                api_key: env_required("DORY_EMBEDDING_API_KEY")?,
+                model: env_or("DORY_EMBEDDING_MODEL", "BAAI/bge-m3"),
+                dimensions: env_or("DORY_EMBEDDING_DIMENSIONS", "1024")
+                    .parse()
+                    .unwrap_or(1024),
+            },
+        })
     }
 }

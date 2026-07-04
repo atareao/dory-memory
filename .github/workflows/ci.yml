@@ -3,8 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [main, development]
-  push:
-    branches: [development]
 
 jobs:
   test:
@@ -12,14 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
-        run: rustup show
+        uses: dtolnay/rust-toolchain@stable
       - name: Cache cargo
         uses: swatinem/rust-cache@v2
       - name: Check formatting
-        run: cargo fmt --check
-      - name: Lint
-        run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Build
-        run: cargo build
-      - name: Test
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features --locked -- -D warnings
+      - name: Run tests
         run: cargo test

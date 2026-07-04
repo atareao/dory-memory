@@ -24,9 +24,8 @@ async fn main() -> anyhow::Result<()> {
         )
         .init();
 
-    let config_path = std::env::var("DORY_CONFIG").unwrap_or_else(|_| "dory.toml".to_string());
-    let config = config::DoryConfig::load(&config_path)
-        .with_context(|| format!("Failed to load config from {config_path}"))?;
+    let config = config::DoryConfig::from_env()
+        .context("Failed to load configuration from environment")?;
 
     tracing::info!("Connecting to database...");
     let pool = PgPoolOptions::new()
