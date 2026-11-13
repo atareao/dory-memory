@@ -1,9 +1,18 @@
 # Changelog
+## [0.1.13] - 2026-11-13
+
+### Documentation
+
+- Añado licencia MIT
 ## [0.1.12] - 2026-07-04
 
 ### Documentation
 
 - Update README with env-var config and CI/CD badges (#18)
+
+### Miscellaneous Tasks
+
+- Release v0.1.12
 ## [0.1.11] - 2026-07-04
 
 ### Miscellaneous Tasks
